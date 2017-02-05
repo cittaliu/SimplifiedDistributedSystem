@@ -2,6 +2,7 @@ import socket
 import sys
 import argparse
 
+data = []
 
 def add():
     global name
@@ -22,8 +23,11 @@ def add():
     print "[*]",name,"is connecting to the server", ip1,":",port1
     # print "[*]",name,"is connecting to the server", ip2,":",port2
 
-def create():
-    return "create topic"
+def create(topic, partition='1'):
+    data = [topic, partition, '', '0']
+
+    return data
+
 
 def subscribe():
     return "subscribe topic"
@@ -38,13 +42,18 @@ def Main():
     command = raw_input(name+"> ")
     while command != 'q':
         key = command.split('(',1)[0].strip()
-        result = function_dict[key]()
         print key
-        command = command.split('(', 1)[1].split(')')[0]
-        feedback = str(dict(s.split('=', 1) for s in command.split()))
-        print feedback
-        print "[*] Sending to server with",key,"request",feedback
-        s1.send(feedback)
+        if key == "create":
+            command = command.split('(', 1)[1].split(')')[0]
+            feedback = dict(s.split('=', 1) for s in command.split())
+
+            result = create(feedback['topic'], feedback['partition'])
+            print "[*] Sending to server with",key,"request", result
+            result.append(key)
+            send_to_server = ','.join(result)
+            print send_to_server
+
+            s1.send(send_to_server)
         command = raw_input(name+">")
 
     s1.close()

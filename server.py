@@ -2,6 +2,8 @@ import socket
 import argparse
 from thread import *
 
+database = []
+
 def clientthread(conn):
     #infinite loop so that function do not terminate and thread do not end.
     while True:
@@ -30,12 +32,20 @@ def Main():
     while True:
         #Accepting incoming connections
     	data = conn.recv(1024)
-    	print "[*] Received '",data,"' from the client"
-    	print "		Processing data"
-        
+        data = data.split(',')
+        print "[*] Received '",data,"' from the client"
+        print "		Processing data"
+
+        key = data[-1]
+        data.pop()
+
+
     	if(data=="hello server"):
     	  conn.send("Hello client")
     	  print "	Processing done, data was valid.\n[*] Reply sent"
+        elif(key=="create"):
+    	  database.append(data)
+          print database
     	elif(data=="disconnect"):
     	  conn.send("Goodbye")
     	  conn.close()
