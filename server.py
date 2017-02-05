@@ -1,5 +1,4 @@
 import socket
-import argparse
 from thread import *
 import sys
 
