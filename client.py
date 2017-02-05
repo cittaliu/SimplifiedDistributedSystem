@@ -12,16 +12,16 @@ def add():
     args = parser.parse_args()
     ip1 = str(args.add[0])
     port1 = int(args.add[1])
-    # ip2 = str(args.add[2])
-    # port2 = int(args.add[3])
+    ip2 = str(args.add[2])
+    port2 = int(args.add[3])
     global s1
-    # global s2
+    global s2
     s1 = socket.socket()
     s1.connect((ip1, port1))
-    # s2 = socket.socket()
-    # s2.connect((ip2, port2))
+    s2 = socket.socket()
+    s2.connect((ip2, port2))
     print "[*]",name,"is connecting to the server", ip1,":",port1
-    # print "[*]",name,"is connecting to the server", ip2,":",port2
+    print "[*]",name,"is connecting to the server", ip2,":",port2
 
 def create(topic, partition='1'):
     data = [topic, partition, '', '0']
