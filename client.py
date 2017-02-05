@@ -63,8 +63,8 @@ def Main():
 
     # data = s1.recv(1024)
 
-    # s1.close()
-    # s2.close()
+    s1.close()
+    s2.close()
 
 if __name__ == '__main__':
 
