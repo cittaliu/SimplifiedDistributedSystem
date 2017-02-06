@@ -53,7 +53,11 @@ def subscribe(topic_name, user_name):
         if topic_name == topic["topic_name"] and topic["clients_name"]==[]:
             topic["clients_name"].append(user_name)
             all_partitions = list(range(int(total_partition)))
-
+            # The first user gets all partitions ~
+            global first_user_partitions
+            first_user_partitions = all_partitions
+            global first_user_name
+            first_user_name = user_name
             global partition_server1
             partition_server1 = []
             global partition_server2
@@ -79,29 +83,16 @@ def subscribe(topic_name, user_name):
             if len(topic["clients_name"]) == int(topic["partition_num"]):
                 reply_from_server = "No more partition left!"
                 return reply_from_server
-            elif:
+            else:
                 if user_name in topic["clients_name"]:
                     return "You have already subscribed for this topic!"
-                # else:
-                #     topic["clients_name"].append(user_name)
-                #     all_partitions = list(range(int(total_partition)))
-                #     for partition in all_partitions:
-                #         if partition / len(topic["clients_name"]) == 0:
-                #             partition_server1.append(partition)
-                #         elif partition% == 1:
-                #             partition_server2.append(partition)
-                #     partition_server1 = map(str, partition_server1)
-                #     partitions_1 = ','.join(partition_server1)
-                #     reply_from_server_1= user_name+' subscribed to '+ topic_name+ ' and can get partition '+ partitions_1+ " from server1."
-                #     if partition_server2 == []:
-                #         return reply_from_server_1
-                #     else:
-                #         partition_server2 = map(str, partition_server2)
-                #         partitions_2 = ','.join(partition_server2)
-                #         reply_from_server_2 = "and get partition " + partitions_2 + " from server2."
-                #         reply_from_server = reply_from_server_1 + reply_from_server_2
-                #         return reply_from_server_1 + reply_from_server_2
-
+                else:
+                    new_user_partition = first_user_partitions.pop()
+                    first_user_partitions = map(str, first_user_partitions)
+                    first_user_partitions = ','.join(first_user_partitions)
+                    new_user_partition = user_name + " gets partition " + new_user_partition + " for topic " + topic_name
+                    first_user_partitions = first_user_name + " now has partition " + first_user_partitions
+                    return new_user_partition + first_user_partitions
 
 def publish_topic(topic_name,key,value):
     for topic in data_struct:
