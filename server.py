@@ -39,6 +39,8 @@ def clientthread(conn):
 
         elif method_client_called =="subscribe":
             conn.send(subscribe(data[0],data[1]))
+        # elif method_client_called =="publish":
+
 
         else:
             conn.send("Invalid Request")
@@ -91,20 +93,19 @@ def subscribe(topic_name, user_name):
                     first_user_partitions = map(str, first_user_partitions)
                     first_user_partitions = ','.join(first_user_partitions)
                     new_user_partition = user_name + " gets partition " + new_user_partition + " for topic " + topic_name
-                    first_user_partitions = first_user_name + " now has partition " + first_user_partitions
+                    first_user_partitions = first_user_name + " now gets partition " + first_user_partitions + " for topic " + topic_name
                     return new_user_partition + first_user_partitions
 
-def publish_topic(topic_name,key,value):
+def publish_topic(topic_name,key,value,partition):
     for topic in data_struct:
         if topic_name == topic[0]:
-            topic[2] = key
-            topic[3] = value
+            topic[2].append([key, value])
             print 'put ','("',key,'")', value , 'on partition ', topic[1]
 
 def get_topic(topic_name):
     for topic in data_struct:
         if topic_name == topic[0]:
-            print 'get','("',topic[2],'"),',topic[3],'from topic',topic_name,'and',topic[1]
+            print 'get','("',topic[2][0][0],'"),',topic[2][0][1],'from topic',topic_name,'and',topic[1]
 
 
 def Main(argv):
