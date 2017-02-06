@@ -41,8 +41,6 @@ def filter_data(topic, partition='1'):
         elif each_partition%2 == 1:
             data = [topic, each_partition, '', 0, '']
             data_send_to_server2.append(data)
-    print "Data Stored in Server1",data_send_to_server1
-    print "Data Stored in Server2",data_send_to_server2
     return data_send_to_server1, data_send_to_server2
 
 
@@ -62,12 +60,9 @@ def Main():
     command = raw_input(name+"> ")
     while command != 'q':
         key = command.split('(',1)[0].strip()
-        print key
         # Extract the input values and generate it into object
         command = command.split('(', 1)[1].split(')')[0]
         feedback = dict(s.split('=', 1) for s in command.split())
-        print "Command",command
-        print "Feedback",feedback
 
         if key == "create":
             # Format the data and prepare the data sent to both servers
@@ -91,17 +86,11 @@ def Main():
         # server2_ready = pickle.dumps(server2_data)
         # Send the data to both servers
         s1.send(server1_ready)
-        print "[*] Request sent."
+        data = s1.recv(1024)
+        print '[*] Received from server: ' + str(data)
         command = raw_input(name+">")
 
-    while True:
-        data = s1.recv(1024)
-        print 'Received from server: ' + str(data)
-
     s1.close()
-    # data = s1.recv(1024)
-
-    # s1.close()
     # s2.close()
 
 if __name__ == '__main__':

@@ -33,11 +33,11 @@ def clientthread(conn):
 
             topic_partition = {"topic_name":data[0][0], "partition_num":total_partition, "clients_name":[]}
             topic_partition_assignment.append(topic_partition)
-            print "Successfully created",total_partition,"partitions."
+            reply_from_server = "Successfully created "+total_partition+" partitions."
+            conn.send(reply_from_server)
             print "    Processing done, data was valid.\n[*] Reply sent"
 
         elif method_client_called =="subscribe":
-            if subscribe(data[0],data[1]) != None:
             conn.send(subscribe(data[0],data[1]))
 
         else:
@@ -52,9 +52,8 @@ def subscribe(topic_name, user_name):
     for topic in topic_partition_assignment:
         if topic_name == topic["topic_name"] and topic["clients_name"]==[]:
             topic["clients_name"].append(user_name)
-            print "Client Name",topic["clients_name"]
             all_partitions = list(range(int(total_partition)))
-            print all_partitions
+
             global partition_server1
             partition_server1 = []
             global partition_server2
@@ -66,19 +65,42 @@ def subscribe(topic_name, user_name):
                     partition_server2.append(partition)
             partition_server1 = map(str, partition_server1)
             partitions_1 = ','.join(partition_server1)
-            print user_name,'subscribed to', topic_name, 'and can get partition' , partitions_1, "from server1"
-            if partition_server2 != []:
+            reply_from_server_1= user_name+' subscribed to '+ topic_name+ ' and can get partition '+ partitions_1+ " from server1."
+            if partition_server2 == []:
+                return reply_from_server_1
+            else:
                 partition_server2 = map(str, partition_server2)
                 partitions_2 = ','.join(partition_server2)
-                print "and get partition", partitions_2, "from server2."
+                reply_from_server_2 = "and get partition " + partitions_2 + " from server2."
+                reply_from_server = reply_from_server_1 + reply_from_server_2
+                return reply_from_server_1 + reply_from_server_2
 
         elif topic_name == topic["topic_name"] and topic["clients_name"]!=[]:
             if len(topic["clients_name"]) == int(topic["partition_num"]):
-                data = "No more partition left!"
-                return data
-
-
-
+                reply_from_server = "No more partition left!"
+                return reply_from_server
+            elif:
+                if user_name in topic["clients_name"]:
+                    return "You have already subscribed for this topic!"
+                # else:
+                #     topic["clients_name"].append(user_name)
+                #     all_partitions = list(range(int(total_partition)))
+                #     for partition in all_partitions:
+                #         if partition / len(topic["clients_name"]) == 0:
+                #             partition_server1.append(partition)
+                #         elif partition% == 1:
+                #             partition_server2.append(partition)
+                #     partition_server1 = map(str, partition_server1)
+                #     partitions_1 = ','.join(partition_server1)
+                #     reply_from_server_1= user_name+' subscribed to '+ topic_name+ ' and can get partition '+ partitions_1+ " from server1."
+                #     if partition_server2 == []:
+                #         return reply_from_server_1
+                #     else:
+                #         partition_server2 = map(str, partition_server2)
+                #         partitions_2 = ','.join(partition_server2)
+                #         reply_from_server_2 = "and get partition " + partitions_2 + " from server2."
+                #         reply_from_server = reply_from_server_1 + reply_from_server_2
+                #         return reply_from_server_1 + reply_from_server_2
 
 
 def publish_topic(topic_name,key,value):
