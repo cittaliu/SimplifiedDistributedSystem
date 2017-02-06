@@ -5,7 +5,6 @@ import pickle
 
 # Database to store all the topics' info
 data_struct = []
-
 topic_partition_assignment = []
 
 
@@ -27,48 +26,59 @@ def clientthread(conn):
         global total_partition
         total_partition = data.pop()
         method_client_called = data.pop()
-        print "Successfully created",total_partition,"partitions."
 
         if method_client_called =="create":
             for element in data:
                  create_topic(element)
-            print data_struct
 
             topic_partition = {"topic_name":data[0][0], "partition_num":total_partition, "clients_name":[]}
             topic_partition_assignment.append(topic_partition)
-            print topic_partition
+            print "Successfully created",total_partition,"partitions."
             print "    Processing done, data was valid.\n[*] Reply sent"
-            
+
         elif method_client_called =="subscribe":
-            for element in data:
-                 subscribe(element[0],element[1])
+            if subscribe(data[0],data[1]) != None:
+            conn.send(subscribe(data[0],data[1]))
 
         else:
             conn.send("Invalid Request")
             print "    Processing done.\n[*] Reply sent"
 
 
-
 def create_topic(topic_info_array):
     data_struct.append(topic_info_array)
-
 
 def subscribe(topic_name, user_name):
     for topic in topic_partition_assignment:
         if topic_name == topic["topic_name"] and topic["clients_name"]==[]:
             topic["clients_name"].append(user_name)
-            all_partitions = list(range(total_partition))
+            print "Client Name",topic["clients_name"]
+            all_partitions = list(range(int(total_partition)))
+            print all_partitions
+            global partition_server1
             partition_server1 = []
+            global partition_server2
             partition_server2 = []
             for partition in all_partitions:
                 if partition%2 == 0:
-                    partition_server1.append(str(partition))
-                    partition_server1=','.join(partition_server1)
-                else:
+                    partition_server1.append(partition)
+                elif partition%2 == 1:
                     partition_server2.append(partition)
-                    partition_server2=','.join(partition_server2)
-                print user_name,'subscribed to', topic_name, 'and can get partition' , partition_server1, "from", server1, "and get", partition_server2, "from", server2
-        # elif topic_name == topic[0] and topic[4]!='':
+            partition_server1 = map(str, partition_server1)
+            partitions_1 = ','.join(partition_server1)
+            print user_name,'subscribed to', topic_name, 'and can get partition' , partitions_1, "from server1"
+            if partition_server2 != []:
+                partition_server2 = map(str, partition_server2)
+                partitions_2 = ','.join(partition_server2)
+                print "and get partition", partitions_2, "from server2."
+
+        elif topic_name == topic["topic_name"] and topic["clients_name"]!=[]:
+            if len(topic["clients_name"]) == int(topic["partition_num"]):
+                data = "No more partition left!"
+                return data
+
+
+
 
 
 def publish_topic(topic_name,key,value):

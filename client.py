@@ -94,11 +94,11 @@ def Main():
         print "[*] Request sent."
         command = raw_input(name+">")
 
-    s1.close()
     while True:
         data = s1.recv(1024)
         print 'Received from server: ' + str(data)
 
+    s1.close()
     # data = s1.recv(1024)
 
     # s1.close()
