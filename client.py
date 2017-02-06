@@ -2,11 +2,13 @@ import socket
 import sys
 import argparse
 
-data = []
+global data_send_to_server1
+data_send_to_server1= []
+global data_send_to_server2
+data_send_to_server2 = []
 
 def add():
     global name
-    # connected to both servers
     name = socket.gethostname()
     parser = argparse.ArgumentParser()
     parser.add_argument("-a","--add",nargs="+",help="Connect to server")
@@ -24,24 +26,22 @@ def add():
     print "[*]",name,"is connecting to the server", ip1,":",port1
     # print "[*]",name,"is connecting to the server", ip2,":",port2
 
-# def assign_partition(topic,partition_amount):
-#     partition_amount = int(partition_amount)
-#     all_partition = list(range(partition_amount))
-#     data_server0 = []
-#     data_server1 = []
-#     for each_partiton in all_partition:
-#         single_partition_record=create(topic,str(each_partiton))
-#         if each_partiton %2 ==0:
-#             data_server0.append(single_partition_record)
-#             print data_server0
-#         else:
-#             data_server1.append(single_partition_record)
-#             print data_server1
-
-def create(topic, partition_index='0'):
-    data = [topic, partition, '', '0']
-
-    return data
+def filter_data(topic, partition='1'):
+    #reset the database in client side
+    data_send_to_server1= []
+    data_send_to_server2 = []
+    all_partitions = list(range(int(partition)))
+    print all_partitions
+    for each_partition in all_partitions:
+        if each_partition%2 == 0:
+            data = [topic, each_partition, '', '0']
+            data_send_to_server1.append(data)
+        elif each_partition%2 == 1:
+            data = [topic, each_partition, '', '0']
+            data_send_to_server2.append(data)
+    print "Data Stored in Server1",data_send_to_server1
+    print "Data Stored in Server2",data_send_to_server2
+    return data_send_to_server1
 
 
 def subscribe():
@@ -51,28 +51,24 @@ def publish():
     return "publish topic"
 
 def Main():
-    # add servers to start the program
     add()
-    # built a function dictionary to store all the functions
-    function_dict = {'create':create, 'subscribe':subscribe, 'publish':publish}
+
+    function_dict = {'filter_data':filter_data, 'subscribe':subscribe, 'publish':publish}
     command = raw_input(name+"> ")
     while command != 'q':
-        #get the function by getting the first word from user inputs
         key = command.split('(',1)[0].strip()
         print key
         if key == "create":
-            # Parsing the command into a object which can be stored in database later
-            # e.g. {'topic':'topic_1', 'partition':'2'}
             command = command.split('(', 1)[1].split(')')[0]
             feedback = dict(s.split('=', 1) for s in command.split())
-            # track the value from key and call the create function
-            result = create(feedback['topic'], feedback['partition'])
-            print "[*] Sending to server with",key,"request", result
-            result.append(key)
-            send_to_server = ','.join(result)
-            print send_to_server
 
-            s1.send(send_to_server)
+            result = filter_data(feedback['topic'], feedback['partition'])
+            print "[*] Sending to server1 with",key,"request", result
+            # result.append(key)
+            # send_to_server = ','.join(result)
+            # print send_to_server
+            #
+            # s1.send(send_to_server)
         command = raw_input(name+">")
 
     s1.close()
@@ -82,8 +78,8 @@ def Main():
 
     # data = s1.recv(1024)
 
-    s1.close()
-    s2.close()
+    # s1.close()
+    # s2.close()
 
 if __name__ == '__main__':
 
