@@ -3,6 +3,12 @@ from thread import *
 import sys
 import pickle
 
+# Database to store all the topics' info
+data_struct = []
+
+topic_partition_assignment = []
+
+
 def clientthread(conn):
     #infinite loop so that function do not terminate and thread do not end.
     while True:
@@ -11,16 +17,28 @@ def clientthread(conn):
         data = conn.recv(1024) # 1024 stands for bytes of data to be received
         print data
 
-data_struct = []
+
+
 
 def create_topic(topic_info_array):
     data_struct.append(topic_info_array)
 
-def subscribe(topic_name):
+
+def subscribe(topic_name, user_name):
     for topic in data_struct:
-        if topic_name == topic[0]:
-            print 'subscribed to', topic_name, 'and can get partition' , topic[1]
-            return topic[1]
+        count = 0
+        if topic_name == topic[0] and topic[4]=='':
+            topic[4] = user_name
+
+            print 'subscribed to', topic_name, 'and can get partition' , topic[1], "from", server_name
+        # elif topic_name == topic[0] and topic[4]!='':
+
+
+
+
+
+
+
 
 def publish_topic(topic_name,key,value):
     for topic in data_struct:
@@ -42,6 +60,7 @@ def Main(argv):
     server.bind(('', 0))
     server.listen(5)
     port = server.getsockname()[1]
+    global server_name
     server_name = ['']
 
     arglist = sys.argv
@@ -71,17 +90,30 @@ def Main(argv):
         print "[*] Received '",data,"' from the client"
         print "		Processing data"
 
-        method_client_called = data.pop()
+        if data=="disconnect":
+            conn.send("Goodbye")
+            conn.close()
+            break;
 
-        if(method_client_called =="create"):
+        global total_partition
+        total_partition = data.pop()
+        method_client_called = data.pop()
+        print "Successfully created",total_partition,"partitions."
+
+        if method_client_called =="create":
             for element in data:
     	         create_topic(element)
             print data_struct
+
+            topic_partition = {"topic":data[0][0], "partition_num":total_partition, "client":[]}
+            topic_partition_assignment.append(topic_partition)
+            print topic_partition
+
             print "	Processing done, data was valid.\n[*] Reply sent"
-    	elif(data=="disconnect"):
-    	    conn.send("Goodbye")
-    	    conn.close()
-    	    break;
+        elif method_client_called =="subscribe":
+            for element in data:
+    	         subscribe(element[0],element[1])
+
     	else:
     	    conn.send("Invalid Request")
     	    print "	Processing done.\n[*] Reply sent"
