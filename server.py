@@ -1,6 +1,7 @@
 import socket
 from thread import *
 import sys
+import pickle
 
 def clientthread(conn):
     #infinite loop so that function do not terminate and thread do not end.
@@ -12,8 +13,8 @@ def clientthread(conn):
 
 data_struct = []
 
-def create_topic(topic_name, partition_number, key="", value=0):
-    data_struct.append( [topic_name,partition_number,key,value] )
+def create_topic(topic_info_array):
+    data_struct.append(topic_info_array)
 
 def subscribe(topic_name):
     for topic in data_struct:
@@ -64,29 +65,26 @@ def Main(argv):
 
     while True:
         #Accepting incoming connections
-    	data = conn.recv(1024)
-        data = data.split(',')
+    	received_data = conn.recv(1024)
+        #Deserialize the string to array
+        data = pickle.loads(received_data)
         print "[*] Received '",data,"' from the client"
         print "		Processing data"
 
-        key = data[-1]
-        data.pop()
+        method_client_called = data.pop()
 
-
-    	if(data=="hello server"):
-    	  conn.send("Hello client")
-    	  print "	Processing done, data was valid.\n[*] Reply sent"
-        elif(key=="create"):
-    	  database.append(data)
-          print database
+        if(method_client_called =="create"):
+            for element in data:
+    	         create_topic(element)
+            print data_struct
+            print "	Processing done, data was valid.\n[*] Reply sent"
     	elif(data=="disconnect"):
-    	  conn.send("Goodbye")
-    	  conn.close()
-    	  break;
+    	    conn.send("Goodbye")
+    	    conn.close()
+    	    break;
     	else:
-    	  conn.send("Invalid Request")
-    	  print "	Processing done.\n[*] Reply sent"
-
+    	    conn.send("Invalid Request")
+    	    print "	Processing done.\n[*] Reply sent"
 
     conn.close()
     server.close()

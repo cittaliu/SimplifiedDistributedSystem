@@ -1,6 +1,7 @@
 import socket
 import sys
 import argparse
+import pickle
 
 global data_send_to_server1
 data_send_to_server1= []
@@ -27,21 +28,20 @@ def add():
     # print "[*]",name,"is connecting to the server", ip2,":",port2
 
 def filter_data(topic, partition='1'):
-    #reset the database in client side
-    data_send_to_server1= []
+    #reset the database to empyty before processing the data
     data_send_to_server2 = []
     all_partitions = list(range(int(partition)))
     print all_partitions
     for each_partition in all_partitions:
         if each_partition%2 == 0:
-            data = [topic, each_partition, '', '0']
+            data = [topic, each_partition, '', 0]
             data_send_to_server1.append(data)
         elif each_partition%2 == 1:
-            data = [topic, each_partition, '', '0']
+            data = [topic, each_partition, '', 0]
             data_send_to_server2.append(data)
     print "Data Stored in Server1",data_send_to_server1
     print "Data Stored in Server2",data_send_to_server2
-    return data_send_to_server1
+    return data_send_to_server1, data_send_to_server2
 
 
 def subscribe():
@@ -62,13 +62,19 @@ def Main():
             command = command.split('(', 1)[1].split(')')[0]
             feedback = dict(s.split('=', 1) for s in command.split())
 
-            result = filter_data(feedback['topic'], feedback['partition'])
-            print "[*] Sending to server1 with",key,"request", result
-            # result.append(key)
-            # send_to_server = ','.join(result)
-            # print send_to_server
+            server1_data, server2_data = filter_data(feedback['topic'], feedback['partition'])
+
+            print "[*] Sending to server1 with",key,"request", server1_data
+            print "[*] Sending to server2 with",key,"request", server2_data
+            # Add the method at the end of array for letting server knows which method client is calling
+            server1_data.append(key)
+            server2_data.append(key)
+            # Serialize the data into a string for sending preparation
+            server1_ready = pickle.dumps(server1_data)
+            server2_ready = pickle.dumps(server2_data)
+
             #
-            # s1.send(send_to_server)
+            s1.send(server1_ready)
         command = raw_input(name+">")
 
     s1.close()
