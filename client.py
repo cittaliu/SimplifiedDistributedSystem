@@ -78,8 +78,6 @@ def Main():
         elif key == "subscribe":
             server1_data, server2_data = subscribe(feedback['topic'])
 
-        print "[*] Sending to server1 with",key,"request", server1_data
-        print "[*] Sending to server2 with",key,"request", server2_data
 
         # Add the method at the end of array for letting server knows which method client is calling
         server1_data.append(key)
@@ -87,9 +85,10 @@ def Main():
         server2_data.append(key)
         server2_data.append(num_partition)
         # Serialize the data into a string for sending preparation
+        print "[*] Sending to server1 with",key,"request", server1_data
+        # print "[*] Sending to server2 with",key,"request", server2_data
         server1_ready = pickle.dumps(server1_data)
-        server2_ready = pickle.dumps(server2_data)
-        print server1_data
+        # server2_ready = pickle.dumps(server2_data)
         # Send the data to both servers
         s1.send(server1_ready)
         print "[*] Request sent."
