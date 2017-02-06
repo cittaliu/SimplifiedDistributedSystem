@@ -23,14 +23,13 @@ def clientthread(conn):
             conn.close()
             break;
 
-        global total_partition
-        total_partition = data.pop()
         method_client_called = data.pop()
 
         if method_client_called =="create":
             for element in data:
                  create_topic(element)
 
+            total_partition = data.pop()
             topic_partition = {"topic_name":data[0][0], "partition_num":total_partition, "clients_name":[]}
             topic_partition_assignment.append(topic_partition)
             reply_from_server = "Successfully created "+total_partition+" partitions."
@@ -39,9 +38,13 @@ def clientthread(conn):
 
         elif method_client_called =="subscribe":
             conn.send(subscribe(data[0],data[1]))
-        # elif method_client_called =="publish":
-
-
+        elif method_client_called =="publish":
+            data_send_back = publish_topic(data[0],data[1][0],data[1][1],data[2])
+            if data_send_back = '':
+                data_send_back = "No matching record found in " + server_name
+                conn.send(data_send_back)
+            else:
+                conn.send(data_send_back)
         else:
             conn.send("Invalid Request")
             print "    Processing done.\n[*] Reply sent"
@@ -54,7 +57,11 @@ def subscribe(topic_name, user_name):
     for topic in topic_partition_assignment:
         if topic_name == topic["topic_name"] and topic["clients_name"]==[]:
             topic["clients_name"].append(user_name)
-            all_partitions = list(range(int(total_partition)))
+            partitions = ''
+            for topic_partition in topic_partition_assignment:
+                if topic_partition["topic_name"] == topic_name:
+                    partitions = topic_partition["partition_num"]
+            all_partitions = list(range(int(partitions)))
             # The first user gets all partitions ~
             global first_user_partitions
             first_user_partitions = all_partitions
@@ -97,10 +104,15 @@ def subscribe(topic_name, user_name):
                     return new_user_partition + first_user_partitions
 
 def publish_topic(topic_name,key,value,partition):
+    reply_from_server = ''
     for topic in data_struct:
-        if topic_name == topic[0]:
-            topic[2].append([key, value])
-            print 'put ','("',key,'")', value , 'on partition ', topic[1]
+        if topic_name == topic[0] and int(partition) == topic[1]:
+            topic[2].append([key, int(value)])
+            reply_from_server += 'put '+'("'+key+", "+ value +'")'+ 'on topic '+ topic[0]+ " and partition "+ str(topic[1])
+        if topic_name == topic[0] and int(partition) == -1:
+            topic[2].append([key, int(value)])
+            reply_from_server = 'put '+'("'+key+", "+value +'")'+ 'on topic '+ topic[0]
+        return reply_from_server
 
 def get_topic(topic_name):
     for topic in data_struct:

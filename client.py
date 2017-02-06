@@ -52,17 +52,18 @@ def subscribe(topic):
     return data_send_to_server1, data_send_to_server2
 
 
-def publish(topic,key,value,partition=-1):
+def publish(topic,key,value,partition='-1'):
     # Set partition = -1 when the client doesn't specify which partition he wants to publish to
     data_send_to_server1 = []
     data_send_to_server2 = []
-    if partition == -1:
-        data_send_to_server1 = [topic,[key,value],partition]
-        data_send_to_server1 = [topic,[key,value],partition]
-    elif partition%2 == 0:
-        data_send_to_server1 = [topic,[key,value],partition]
+    if partition == '-1':
+        data_send_to_server1=[topic,[key,value],partition]
+        data_send_to_server1=[topic,[key,value],partition]
+    elif int(partition)%2 == 0:
+        data_send_to_server1=[topic,[key,value],partition]
     else:
-        data_send_to_server2 = [topic,[key,value],partition]
+        data_send_to_server2=[topic,[key,value],partition]
+    print data_send_to_server1, data_send_to_server2
     return data_send_to_server1, data_send_to_server2
 
 def Main():
@@ -81,21 +82,21 @@ def Main():
             server1_data, server2_data = filter_data(feedback['topic'], feedback['partition'])
             global num_partition
             num_partition = feedback['partition']
+            server1_data.append(num_partition)
+            server2_data.append(num_partition)
 
         elif method == "subscribe":
             server1_data, server2_data = subscribe(feedback['topic'])
         elif method == "publish":
             try:
-                server1_data, server2_data = publish (feedback['topic'], feedback['partition'], feedback['key'], feedback['value'])
+                server1_data, server2_data = publish (feedback['topic'], feedback['key'], feedback['value'], feedback['partition'])
             except KeyError:
                 server1_data, server2_data = publish (feedback['topic'], feedback['key'], feedback['value'])
 
 
         # Add the method at the end of array for letting server knows which method client is calling
         server1_data.append(method)
-        server1_data.append(num_partition)
         server2_data.append(method)
-        server2_data.append(num_partition)
         # Serialize the data into a string for sending preparation
         print "[*] Sending to server1 with",method,"request", server1_data
         # print "[*] Sending to server2 with",key,"request", server2_data
