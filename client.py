@@ -29,23 +29,28 @@ def add():
 
 def filter_data(topic, partition='1'):
     #reset the database to empyty before processing the data
+    data_send_to_server1 = []
     data_send_to_server2 = []
     all_partitions = list(range(int(partition)))
     print all_partitions
     for each_partition in all_partitions:
         if each_partition%2 == 0:
-            data = [topic, each_partition, '', 0]
+            # data[0] is topic name; data[1] is partition index; data[2] is key; data[3] is value; data[4] is subscribed client_name
+            data = [topic, each_partition, '', 0, '']
             data_send_to_server1.append(data)
         elif each_partition%2 == 1:
-            data = [topic, each_partition, '', 0]
+            data = [topic, each_partition, '', 0, '']
             data_send_to_server2.append(data)
     print "Data Stored in Server1",data_send_to_server1
     print "Data Stored in Server2",data_send_to_server2
     return data_send_to_server1, data_send_to_server2
 
 
-def subscribe():
-    return "subscribe topic"
+def subscribe(topic):
+    data_send_to_server1 = [topic, name]
+    data_send_to_server2 = [topic, name]
+    return data_send_to_server1, data_send_to_server2
+
 
 def publish():
     return "publish topic"
@@ -58,23 +63,36 @@ def Main():
     while command != 'q':
         key = command.split('(',1)[0].strip()
         print key
+        # Extract the input values and generate it into object
+        command = command.split('(', 1)[1].split(')')[0]
+        feedback = dict(s.split('=', 1) for s in command.split())
+        print "Command",command
+        print "Feedback",feedback
+
         if key == "create":
-            command = command.split('(', 1)[1].split(')')[0]
-            feedback = dict(s.split('=', 1) for s in command.split())
-
+            # Format the data and prepare the data sent to both servers
             server1_data, server2_data = filter_data(feedback['topic'], feedback['partition'])
+            global num_partition
+            num_partition = feedback['partition']
 
-            print "[*] Sending to server1 with",key,"request", server1_data
-            print "[*] Sending to server2 with",key,"request", server2_data
-            # Add the method at the end of array for letting server knows which method client is calling
-            server1_data.append(key)
-            server2_data.append(key)
-            # Serialize the data into a string for sending preparation
-            server1_ready = pickle.dumps(server1_data)
-            server2_ready = pickle.dumps(server2_data)
+        elif key == "subscribe":
+            server1_data, server2_data = subscribe(feedback['topic'])
 
-            #
-            s1.send(server1_ready)
+        print "[*] Sending to server1 with",key,"request", server1_data
+        print "[*] Sending to server2 with",key,"request", server2_data
+
+        # Add the method at the end of array for letting server knows which method client is calling
+        server1_data.append(key)
+        server1_data.append(num_partition)
+        server2_data.append(key)
+        server2_data.append(num_partition)
+        # Serialize the data into a string for sending preparation
+        server1_ready = pickle.dumps(server1_data)
+        server2_ready = pickle.dumps(server2_data)
+        print server1_data
+        # Send the data to both servers
+        s1.send(server1_ready)
+        print "[*] Request sent."
         command = raw_input(name+">")
 
     s1.close()
