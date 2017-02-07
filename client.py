@@ -16,23 +16,22 @@ def add():
     args = parser.parse_args()
     ip1 = str(args.add[0])
     port1 = int(args.add[1])
-    # ip2 = str(args.add[2])
-    # port2 = int(args.add[3])
+    ip2 = str(args.add[2])
+    port2 = int(args.add[3])
     global s1
-    # global s2
+    global s2
     s1 = socket.socket()
     s1.connect((ip1, port1))
-    # s2 = socket.socket()
-    # s2.connect((ip2, port2))
+    s2 = socket.socket()
+    s2.connect((ip2, port2))
     print "[*]",name,"is connecting to the server", ip1,":",port1
-    # print "[*]",name,"is connecting to the server", ip2,":",port2
+    print "[*]",name,"is connecting to the server", ip2,":",port2
 
 def filter_data(topic, partition='1'):
     #reset the database to empyty before processing the data
     data_send_to_server1 = []
     data_send_to_server2 = []
     all_partitions = list(range(int(partition)))
-    print all_partitions
     for each_partition in all_partitions:
         if each_partition%2 == 0:
             # data[0] is topic name; data[1] is partition index; data[2] is key & value pair
@@ -112,9 +111,9 @@ def Main():
         server2_data.append(method)
         # Serialize the data into a string for sending preparation
         print "[*] Sending to server1 with",method,"request", server1_data
-        # print "[*] Sending to server2 with",key,"request", server2_data
+        print "[*] Sending to server2 with",method,"request", server2_data
         server1_ready = pickle.dumps(server1_data)
-        # server2_ready = pickle.dumps(server2_data)
+        server2_ready = pickle.dumps(server2_data)
         # Send the data to both servers
 
         s1.send(server1_ready)
@@ -123,7 +122,7 @@ def Main():
         command = raw_input(name+">")
 
     s1.close()
-    # s2.close()
+    s2.close()
 
 if __name__ == '__main__':
 
