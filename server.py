@@ -23,6 +23,7 @@ def clientthread(conn):
             conn.close()
             break;
 
+
         method_client_called = data.pop()
 
         if method_client_called =="create":
@@ -40,11 +41,13 @@ def clientthread(conn):
             conn.send(subscribe(data[0],data[1]))
         elif method_client_called =="publish":
             data_send_back = publish_topic(data[0],data[1][0],data[1][1],data[2])
-            if data_send_back = '':
+            if data_send_back == '':
                 data_send_back = "No matching record found in " + server_name
                 conn.send(data_send_back)
             else:
                 conn.send(data_send_back)
+        elif method_client_called =="get":
+            conn.send(get_topic(data[0],data[1]))
         else:
             conn.send("Invalid Request")
             print "    Processing done.\n[*] Reply sent"
@@ -108,16 +111,22 @@ def publish_topic(topic_name,key,value,partition):
     for topic in data_struct:
         if topic_name == topic[0] and int(partition) == topic[1]:
             topic[2].append([key, int(value)])
-            reply_from_server += 'put '+'("'+key+", "+ value +'")'+ 'on topic '+ topic[0]+ " and partition "+ str(topic[1])
+            reply_from_server += 'put '+'("'+key+", "+ value +'")'+ ' on topic '+ topic[0]+ " and partition "+ str(topic[1])
         if topic_name == topic[0] and int(partition) == -1:
             topic[2].append([key, int(value)])
-            reply_from_server = 'put '+'("'+key+", "+value +'")'+ 'on topic '+ topic[0]
+            reply_from_server = 'put '+'("'+key+", "+value +'")'+ ' on topic '+ topic[0]
         return reply_from_server
 
-def get_topic(topic_name):
+def get_topic(topic_name, partition):
+    reply_from_server = ''
     for topic in data_struct:
-        if topic_name == topic[0]:
-            print 'get','("',topic[2][0][0],'"),',topic[2][0][1],'from topic',topic_name,'and',topic[1]
+        if topic_name == topic[0] and partition==str(topic[1]):
+            try:
+                reply_from_server ='get'+'("'+topic[2][2][0]+", "+str(topic[2][2][1])+'")'+' from topic '+topic_name+' and partition '+str(topic[1])
+                return reply_from_server
+            except IndexError:
+                reply_from_server = "Error: "+topic_name + " has no data left."
+                return reply_from_server
 
 
 def Main(argv):

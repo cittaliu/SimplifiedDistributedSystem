@@ -63,13 +63,22 @@ def publish(topic,key,value,partition='-1'):
         data_send_to_server1=[topic,[key,value],partition]
     else:
         data_send_to_server2=[topic,[key,value],partition]
-    print data_send_to_server1, data_send_to_server2
     return data_send_to_server1, data_send_to_server2
+
+def get(topic, partition):
+    data_send_to_server1 = []
+    data_send_to_server2 = []
+    if int(partition)%2 == 0:
+        data_send_to_server1=[topic,partition]
+    else:
+        data_send_to_server2=[topic,partition]
+    return data_send_to_server1, data_send_to_server2
+
 
 def Main():
     add()
 
-    function_dict = {'filter_data':filter_data, 'subscribe':subscribe, 'publish':publish}
+    function_dict = {'filter_data':filter_data, 'subscribe':subscribe, 'publish':publish, 'get':get}
     command = raw_input(name+"> ")
     while command != 'q':
         method = command.split('(',1)[0].strip()
@@ -89,10 +98,14 @@ def Main():
             server1_data, server2_data = subscribe(feedback['topic'])
         elif method == "publish":
             try:
-                server1_data, server2_data = publish (feedback['topic'], feedback['key'], feedback['value'], feedback['partition'])
+                server1_data, server2_data = publish(feedback['topic'], feedback['key'], feedback['value'], feedback['partition'])
             except KeyError:
-                server1_data, server2_data = publish (feedback['topic'], feedback['key'], feedback['value'])
-
+                server1_data, server2_data = publish(feedback['topic'], feedback['key'], feedback['value'])
+        elif method == "get":
+            server1_data, server2_data = get(feedback['topic'], feedback['partition'])
+        else:
+             command = raw_input(name+">")
+             continue
 
         # Add the method at the end of array for letting server knows which method client is calling
         server1_data.append(method)
@@ -103,6 +116,7 @@ def Main():
         server1_ready = pickle.dumps(server1_data)
         # server2_ready = pickle.dumps(server2_data)
         # Send the data to both servers
+
         s1.send(server1_ready)
         data = s1.recv(1024)
         print '[*] Received from server: ' + str(data)
