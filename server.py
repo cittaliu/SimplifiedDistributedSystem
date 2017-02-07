@@ -23,7 +23,7 @@ def clientthread(conn):
             conn.close()
             break;
 
-
+        # Get the function which client is calling 
         method_client_called = data.pop()
 
         if method_client_called =="create":
