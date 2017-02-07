@@ -39,6 +39,7 @@ def clientthread(conn):
 
         elif method_client_called =="subscribe":
             conn.send(subscribe(data[0],data[1]))
+            print "    Processing done, data was valid.\n[*] Reply sent"
         elif method_client_called =="publish":
             data_send_back = publish_topic(data[0],data[1][0],data[1][1],data[2])
             if data_send_back == '':
@@ -46,8 +47,10 @@ def clientthread(conn):
                 conn.send(data_send_back)
             else:
                 conn.send(data_send_back)
+            print "    Processing done, data was valid.\n[*] Reply sent"
         elif method_client_called =="get":
             conn.send(get_topic(data[0],data[1]))
+            print "    Processing done, data was valid.\n[*] Reply sent"
         else:
             conn.send("Invalid Request")
             print "    Processing done.\n[*] Reply sent"
@@ -97,7 +100,7 @@ def subscribe(topic_name, user_name):
                 return reply_from_server
             else:
                 if user_name in topic["clients_name"]:
-                    return "You have already subscribed for this topic!"
+                    return "You have already subscribed to this topic!"
                 else:
                     new_user_partition = first_user_partitions.pop()
                     first_user_partitions = map(str, first_user_partitions)
