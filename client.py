@@ -121,6 +121,8 @@ def Main():
         print '[*] Received from server: ' + str(data)
         command = raw_input(name+">")
 
+    print "[*] Aborting the connection with server", ip1,":",port1
+    print "[*] Aborting the connection with server", ip2,":",port2
     s1.close()
     s2.close()
 
