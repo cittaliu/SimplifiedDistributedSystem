@@ -7,7 +7,9 @@ Ruby 2.7.3
 ## How to run my code
 ### Server-side
 * python server.py [server_name]
-*  e.g. python server.py server1
+* e.g. python server.py server1
+* e.g. python server.py server1
+
 ### Client-side
 * python client.py -add ip1 host1 ip2 host2
 * e.g. python client.py -add 192.168.1.41 51827 192.168.1.41 51826
