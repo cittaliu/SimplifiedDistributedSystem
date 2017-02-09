@@ -2,7 +2,7 @@
 
 
 ## Technology
-Ruby 2.7.3
+Python 2.7.3
 
 ## How to run my code
 ### Server-side
@@ -11,7 +11,7 @@ Ruby 2.7.3
 * e.g. python server.py server1
 
 ### Client-side
-* python client.py -add ip1 host1 ip2 host2
+* python client.py -add ip1 port1 ip2 port2
 * e.g. python client.py -add 192.168.1.41 51827 192.168.1.41 51826
 
 ## Functionality
